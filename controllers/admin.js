@@ -5,6 +5,7 @@ exports.getAddProduct = (req, res, next) => {
     pageTitle: "Add Product",
     path: "/admin/add-product",
     editing: false,
+    isloggedIn: req.session.isloggedIn,
   });
 };
 
@@ -49,6 +50,7 @@ exports.getEditProduct = (req, res, next) => {
         path: "/admin/edit-product",
         editing: editMode,
         product: product,
+        isloggedIn: req.session.isloggedIn,
       });
     })
     .catch((err) => console.log(err));
@@ -78,13 +80,14 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
-  // .select('title price -_id') to select only desired field(s)
-  // .populate('userId') to populate the data not just id
+    // .select('title price -_id') to select only desired field(s)
+    // .populate('userId') to populate the data not just id
     .then((products) => {
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products",
+        isloggedIn: req.session.isloggedIn,
       });
     })
     .catch((err) => console.log(err));
