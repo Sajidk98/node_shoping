@@ -4,7 +4,7 @@ exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
-    editing: fal,
+    editing: false,
   });
 };
 
@@ -39,7 +39,7 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect("/");
   }
   const prodId = req.params.productId;
-  Product.findById(prodId)
+  Product.findOne({ _id: prodId, userId: req.user })
     .then((product) => {
       if (!product) {
         return res.redirect("/");
@@ -63,7 +63,10 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(prodId)
     .then((product) => {
-      product.title = updatedTitle;
+      if ((product.userId.toString() !== req.user._id.toString())){
+        return res.redirect('/')
+      }
+        product.title = updatedTitle;
       product.price = updatedPrice;
       product.description = updatedDesc;
       product.imageUrl = updatedImageUrl;
@@ -77,7 +80,7 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  Product.find({ userId: req.user._id })
     // .select('title price -_id') to select only desired field(s)
     // .populate('userId') to populate the data not just id
     .then((products) => {
@@ -92,7 +95,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findByIdAndRemove(prodId)
+  Product.deleteOne({_id:prodId, userId:req.user._id})
     .then((result) => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");
