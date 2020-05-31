@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoSessionStore = require("connect-mongodb-session")(session);
 const csrf = require("csurf");
-const flash = require('connect-flash')
+const flash = require("connect-flash");
 
 const errorController = require("./controllers/error");
 const User = require("./models/user");
@@ -41,7 +41,7 @@ app.use(
 );
 
 app.use(csrfProtection);
-app.use(flash())
+app.use(flash());
 
 app.use((req, res, next) => {
   if (!req.session.user) {
@@ -52,7 +52,9 @@ app.use((req, res, next) => {
       req.user = user;
       next();
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      next(new Error(err));
+    });
 });
 
 app.use((req, res, next) => {
@@ -60,11 +62,17 @@ app.use((req, res, next) => {
   res.locals.csrfToken = req.csrfToken();
   next();
 });
+
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
+app.get("/500", errorController.get500);
 app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+  res.status(500).render("500", { pageTitle: "Server error", path: "/500" });
+});
 
 mongoose
   .connect(MONGO_URI)
