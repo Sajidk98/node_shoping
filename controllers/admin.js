@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 
 const fileHelper = require("../util/file/fileHelper");
 
+const ITEMS_PER_PAGE = 1;
+
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
@@ -128,9 +130,10 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
+  const page = +req.query.page;
   Product.find({ userId: req.user._id })
-    // .select('title price -_id') to select only desired field(s)
-    // .populate('userId') to populate the data not just id
+    .skip((page - 1) * ITEMS_PER_PAGE)
+    .limit(ITEMS_PER_PAGE)
     .then((products) => {
       res.render("admin/products", {
         prods: products,
